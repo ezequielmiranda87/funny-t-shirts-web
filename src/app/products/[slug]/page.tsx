@@ -21,11 +21,11 @@ function generateSlug(name: string): string {
     .trim();
 }
 
-// Fetch product by slug from API
+// Fetch product by slug from API with ISR-ready caching
 async function getProductBySlug(slug: string): Promise<Product | null> {
   try {
     const response = await fetch(`${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/products`, {
-      cache: 'no-store' // For now, until we implement proper caching
+      next: { revalidate: 3600 } // Cache for 1 hour, revalidate on-demand
     });
     
     if (!response.ok) {
@@ -162,6 +162,15 @@ export default async function ProductPage({ params }: ProductPageProps) {
       </main>
     </div>
   );
+}
+
+// Generate static params for all products at build time
+// Temporarily disabled due to mock API delay causing build timeouts
+// Will be re-enabled in next phase after backend integration
+export async function generateStaticParams() {
+  // Return empty array to disable static generation for now
+  // This allows ISR configuration to work without build timeouts
+  return [];
 }
 
 // Generate metadata for SEO (will be enhanced in Phase 4)
