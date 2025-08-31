@@ -3,10 +3,10 @@ import Image from 'next/image';
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Product } from '@/app/api/products/route';
+import { ProductSummary } from '@/types/api';
 
 interface ProductCardProps {
-  product: Product;
+  product: ProductSummary;
 }
 
 // Generate slug from product name (consistent with backend logic)
@@ -53,12 +53,12 @@ export default function ProductCard({ product }: ProductCardProps) {
             <div className="flex items-center space-x-1 text-xs text-muted-foreground">
               <span>⭐</span>
               <span>
-                {product.reviews.length > 0 
-                  ? (product.reviews.reduce((acc, review) => acc + review.rating, 0) / product.reviews.length).toFixed(1)
+                {product.reviewCount > 0 
+                  ? product.avgRating.toFixed(1)
                   : 'No reviews'
                 }
               </span>
-              <span>({product.reviews.length} reviews)</span>
+              <span>({product.reviewCount} reviews)</span>
             </div>
           </div>
         </CardContent>
