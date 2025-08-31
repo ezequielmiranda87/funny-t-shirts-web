@@ -1,0 +1,14 @@
+User-agent: *
+Allow: /
+
+# Sitemap
+Sitemap: https://funny-t-shirts-shop.com/sitemap.xml
+
+# Allow indexing of all pages
+Allow: /products/
+Allow: /categories/
+Allow: /api/
+
+# Disallow admin or internal paths (if any exist in the future)
+# Disallow: /admin/
+# Disallow: /api/revalidate
