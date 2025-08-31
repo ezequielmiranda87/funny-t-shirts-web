@@ -130,7 +130,7 @@ export class ApiError extends Error {
     message: string,
     public status?: number,
     public code?: string,
-    public details?: any
+    public details?: unknown
   ) {
     super(message);
     this.name = 'ApiError';
@@ -145,7 +145,7 @@ export async function apiRequest<T>(
   const config = { ...DEFAULT_CONFIG, ...options.config };
   const url = `${config.baseUrl}${endpoint}`;
   
-  let lastError: Error;
+  let lastError: Error = new Error('Unknown error');
   
   for (let attempt = 1; attempt <= (config.retries || 1); attempt++) {
     try {
