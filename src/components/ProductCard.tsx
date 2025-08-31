@@ -21,54 +21,54 @@ function generateSlug(name: string): string {
 
 export default function ProductCard({ product }: ProductCardProps) {
   return (
-    <Card className="w-full h-full flex flex-col overflow-hidden py-0">
-      <CardHeader className="p-0">
-        <div className="relative aspect-[4/3] overflow-hidden">
-          <Image
-            src={product.image}
-            alt={product.name}
-            fill
-            className="object-cover"
-            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
-            priority={false}
-          />
-        </div>
-      </CardHeader>
-      
-      <CardContent className="flex-grow p-4">
-        <div className="space-y-2">
-          <Badge variant="secondary" className="text-xs">
-            {product.category}
-          </Badge>
-          <h3 className="font-semibold text-sm leading-tight line-clamp-2">
-            {product.name}
-          </h3>
-          <p className="text-2xl font-bold text-primary">
-            ${product.price}
-          </p>
-          <p className="text-xs text-muted-foreground">
-            Stock: {product.stock} left
-          </p>
-          <div className="flex items-center space-x-1 text-xs text-muted-foreground">
-            <span>⭐</span>
-            <span>
-              {product.reviews.length > 0 
-                ? (product.reviews.reduce((acc, review) => acc + review.rating, 0) / product.reviews.length).toFixed(1)
-                : 'No reviews'
-              }
-            </span>
-            <span>({product.reviews.length} reviews)</span>
+    <Link href={`/products/${generateSlug(product.name)}`} className="block w-full h-full">
+      <Card className="w-full h-full flex flex-col overflow-hidden py-0 cursor-pointer transition-all duration-200 hover:shadow-lg hover:scale-[1.02] group">
+        <CardHeader className="p-0">
+          <div className="relative aspect-[4/3] overflow-hidden">
+            <Image
+              src={product.image}
+              alt={product.name}
+              fill
+              className="object-cover group-hover:scale-105 transition-transform duration-200"
+              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+              priority={false}
+            />
           </div>
-        </div>
-      </CardContent>
-      
-      <CardFooter className="p-4 pt-0">
-        <Link href={`/products/${generateSlug(product.name)}`} className="w-full">
-          <Button className="w-full" variant="default">
+        </CardHeader>
+        
+        <CardContent className="flex-grow p-4">
+          <div className="space-y-2">
+            <Badge variant="secondary" className="text-xs">
+              {product.category}
+            </Badge>
+            <h3 className="font-semibold text-sm leading-tight line-clamp-2 group-hover:text-primary transition-colors duration-200">
+              {product.name}
+            </h3>
+            <p className="text-2xl font-bold text-primary">
+              ${product.price}
+            </p>
+            <p className="text-xs text-muted-foreground">
+              Stock: {product.stock} left
+            </p>
+            <div className="flex items-center space-x-1 text-xs text-muted-foreground">
+              <span>⭐</span>
+              <span>
+                {product.reviews.length > 0 
+                  ? (product.reviews.reduce((acc, review) => acc + review.rating, 0) / product.reviews.length).toFixed(1)
+                  : 'No reviews'
+                }
+              </span>
+              <span>({product.reviews.length} reviews)</span>
+            </div>
+          </div>
+        </CardContent>
+        
+        <CardFooter className="p-4 pt-0">
+          <Button className="w-full group-hover:bg-primary group-hover:text-primary-foreground transition-colors duration-200" variant="outline">
             View Details
           </Button>
-        </Link>
-      </CardFooter>
-    </Card>
+        </CardFooter>
+      </Card>
+    </Link>
   );
 }
