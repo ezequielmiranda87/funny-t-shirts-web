@@ -28,7 +28,12 @@ function generateSlug(name: string): string {
 // Fetch products by category
 async function getProductsByCategory(category: string): Promise<{ products: Product[], totalCount: number }> {
   try {
-    const response = await fetch(`${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/products`, {
+    // Use absolute URL for build-time and server-side calls
+    const baseUrl = process.env.VERCEL_URL 
+      ? `https://${process.env.VERCEL_URL}`
+      : process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+      
+    const response = await fetch(`${baseUrl}/api/products`, {
       cache: 'no-store' // For now, until we implement proper caching
     });
     
@@ -54,7 +59,12 @@ async function getProductsByCategory(category: string): Promise<{ products: Prod
 // Get all available categories for validation
 async function getAvailableCategories(): Promise<string[]> {
   try {
-    const response = await fetch(`${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/products`, {
+    // Use absolute URL for build-time and server-side calls
+    const baseUrl = process.env.VERCEL_URL 
+      ? `https://${process.env.VERCEL_URL}`
+      : process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+      
+    const response = await fetch(`${baseUrl}/api/products`, {
       cache: 'no-store'
     });
     

@@ -25,7 +25,12 @@ function generateSlug(name: string): string {
 // Fetch product by slug from API with ISR-ready caching
 async function getProductBySlug(slug: string): Promise<Product | null> {
   try {
-    const response = await fetch(`${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/products`, {
+    // Use absolute URL for build-time and server-side calls, relative for client-side
+    const baseUrl = process.env.VERCEL_URL 
+      ? `https://${process.env.VERCEL_URL}`
+      : process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+      
+    const response = await fetch(`${baseUrl}/api/products`, {
       next: { revalidate: 3600 } // Cache for 1 hour, revalidate on-demand
     });
     
@@ -168,12 +173,26 @@ export default async function ProductPage({ params }: ProductPageProps) {
 }
 
 // Generate static params for all products at build time
-// Temporarily disabled due to mock API delay causing build timeouts
-// Will be re-enabled in next phase after backend integration
 export async function generateStaticParams() {
-  // Return empty array to disable static generation for now
-  // This allows ISR configuration to work without build timeouts
-  return [];
+  // Generate static routes for all products so they work on Vercel
+  const mockSlugs = [
+    'im-not-arguing-im-just-explaining-why-im-right',
+    'coffee-because-murder-is-wrong',
+    'im-not-lazy-im-on-energy-saving-mode', 
+    'error-404-motivation-not-found',
+    'im-not-short-im-fun-sized',
+    'sarcasm-just-one-of-my-many-talents',
+    'im-not-weird-im-limited-edition',
+    'loading-please-wait-99-complete',
+    'i-survived-another-meeting-that-could-have-been-an-email',
+    'ctrl-alt-delete-monday',
+    'running-late-is-my-cardio',
+    'im-not-clumsy-the-floor-just-hates-me'
+  ];
+  
+  return mockSlugs.map((slug) => ({
+    slug,
+  }));
 }
 
 // Generate metadata for SEO (will be enhanced in Phase 4)
