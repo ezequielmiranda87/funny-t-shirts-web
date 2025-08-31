@@ -1,4 +1,5 @@
 import { notFound } from 'next/navigation';
+import Image from 'next/image';
 import { Product } from '@/app/api/products/route';
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -143,11 +144,13 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
               <Card key={product.id} className="w-full h-full flex flex-col overflow-hidden">
                 <CardHeader className="p-0">
                   <div className="relative aspect-[4/3] overflow-hidden">
-                    <img
+                    <Image
                       src={product.image}
                       alt={product.name}
-                      className="w-full h-full object-cover"
-                      loading="eager"
+                      fill
+                      className="object-cover"
+                      sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+                      priority={false}
                     />
                   </div>
                 </CardHeader>
