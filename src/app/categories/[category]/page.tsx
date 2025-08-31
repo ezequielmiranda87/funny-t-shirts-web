@@ -5,7 +5,7 @@ import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card'
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
-import { mockProducts, generateSlug } from '@/lib/products-data';
+import { getProductsByCategory, getCategories, generateSlug } from '@/lib/db-service';
 
 interface CategoryPageProps {
   params: Promise<{
@@ -17,27 +17,29 @@ interface CategoryPageProps {
 }
 
 
-// Get products by category using shared data (more efficient)
-function getProductsByCategory(category: string): { products: Product[], totalCount: number } {
-  const filteredProducts = mockProducts.filter((p: Product) => 
-    p.category.toLowerCase() === category.toLowerCase()
-  );
-  
-  return { 
-    products: filteredProducts,
-    totalCount: filteredProducts.length
-  };
+// Get products by category using database service
+async function getProductsByCategoryFromDB(category: string): Promise<{ products: Product[], totalCount: number }> {
+  try {
+    return await getProductsByCategory(category);
+  } catch (error) {
+    console.error('Error fetching products by category:', error);
+    return { products: [], totalCount: 0 };
+  }
 }
 
-// Get all available categories using shared data (more efficient)
-function getAvailableCategories(): string[] {
-  const categories = [...new Set(mockProducts.map((p: Product) => p.category))] as string[];
-  return categories;
+// Get all available categories using database service
+async function getAvailableCategories(): Promise<string[]> {
+  try {
+    return await getCategories();
+  } catch (error) {
+    console.error('Error fetching categories:', error);
+    return [];
+  }
 }
 
 export default async function CategoryPage({ params }: CategoryPageProps) {
   const { category } = await params;
-  const availableCategories = getAvailableCategories();
+  const availableCategories = await getAvailableCategories();
   
   // Check if category exists
   const categoryExists = availableCategories.some(
@@ -48,7 +50,7 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
     notFound();
   }
   
-  const { products, totalCount } = getProductsByCategory(category);
+  const { products, totalCount } = await getProductsByCategoryFromDB(category);
   
   // Capitalize category name for display
   const displayCategory = category.charAt(0).toUpperCase() + category.slice(1);

@@ -5,7 +5,7 @@ import { Product } from '@/app/api/products/route';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { mockProducts, generateSlug } from '@/lib/products-data';
+import { getProductBySlug, getProductsForStaticGeneration, generateSlug } from '@/lib/db-service';
 
 interface ProductPageProps {
   params: Promise<{
@@ -15,16 +15,22 @@ interface ProductPageProps {
 
 // Use shared slug generation function from products-data
 
-// Fetch product by slug with fallback to shared data
-async function getProductBySlug(slug: string): Promise<Product | null> {
+// Fetch product by slug with build-time optimization
+async function getProductBySlugWithFallback(slug: string): Promise<Product | null> {
   try {
-    // For Vercel builds, use shared data directly to avoid API call issues
-    if (process.env.VERCEL_ENV) {
-      const product = mockProducts.find(p => generateSlug(p.name) === slug);
-      return product || null;
+    // During build time, use static data directly to avoid database initialization
+    if (process.env.NODE_ENV === 'production' || process.env.NEXT_PHASE === 'phase-production-build') {
+      const { getInitialProductsForBuild } = await import('@/lib/database-static-data');
+      const products = getInitialProductsForBuild();
+      return products.find(p => generateSlug(p.name) === slug) || null;
     }
     
-    // For development, try API first
+    // For Vercel runtime, use database service
+    if (process.env.VERCEL_ENV) {
+      return await getProductBySlug(slug);
+    }
+    
+    // For development, try API first then fallback to database
     const baseUrl = process.env.VERCEL_URL 
       ? `https://${process.env.VERCEL_URL}`
       : process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
@@ -34,9 +40,8 @@ async function getProductBySlug(slug: string): Promise<Product | null> {
     });
     
     if (!response.ok) {
-      // Fallback to shared data if API fails
-      const product = mockProducts.find(p => generateSlug(p.name) === slug);
-      return product || null;
+      // Fallback to database service if API fails
+      return await getProductBySlug(slug);
     }
     
     const data = await response.json();
@@ -47,15 +52,21 @@ async function getProductBySlug(slug: string): Promise<Product | null> {
     return product || null;
   } catch (error) {
     console.error('Error fetching product:', error);
-    // Fallback to shared data if everything fails
-    const product = mockProducts.find(p => generateSlug(p.name) === slug);
-    return product || null;
+    // Final fallback to static data
+    try {
+      const { getInitialProductsForBuild } = await import('@/lib/database-static-data');
+      const products = getInitialProductsForBuild();
+      return products.find(p => generateSlug(p.name) === slug) || null;
+    } catch (staticError) {
+      console.error('Static data fallback also failed:', staticError);
+      return null;
+    }
   }
 }
 
 export default async function ProductPage({ params }: ProductPageProps) {
   const { slug } = await params;
-  const product = await getProductBySlug(slug);
+  const product = await getProductBySlugWithFallback(slug);
 
   if (!product) {
     notFound();
@@ -177,16 +188,23 @@ export default async function ProductPage({ params }: ProductPageProps) {
 
 // Generate static params for all products at build time
 export async function generateStaticParams() {
-  // Use shared product data to avoid API calls during build
-  return mockProducts.map((product) => ({
-    slug: generateSlug(product.name),
-  }));
+  try {
+    // Use database service to get all products for static generation
+    const products = await getProductsForStaticGeneration();
+    return products.map((product) => ({
+      slug: generateSlug(product.name),
+    }));
+  } catch (error) {
+    console.error('Error generating static params:', error);
+    // Return empty array to prevent build failure
+    return [];
+  }
 }
 
 // Generate metadata for SEO (will be enhanced in Phase 4)
 export async function generateMetadata({ params }: ProductPageProps) {
   const { slug } = await params;
-  const product = await getProductBySlug(slug);
+  const product = await getProductBySlugWithFallback(slug);
   
   if (!product) {
     return {

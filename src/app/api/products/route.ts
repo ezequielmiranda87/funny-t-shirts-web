@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { mockProducts } from '@/lib/products-data';
+import { getAllProducts } from '@/lib/db-service';
 
 export interface Product {
   id: string;
@@ -25,10 +25,20 @@ export interface Review {
 // Product data is now imported from shared module
 
 export async function GET() {
-  // Return ALL products with ALL their details at once
-  return NextResponse.json({
-    products: mockProducts,
-    total: mockProducts.length,
-    message: 'Mock API - ready for backend integration'
-  });
+  try {
+    // Get all products from database
+    const products = await getAllProducts();
+    
+    return NextResponse.json({
+      products,
+      total: products.length,
+      message: 'Database API - lowdb integration complete'
+    });
+  } catch (error) {
+    console.error('Error fetching products from database:', error);
+    return NextResponse.json(
+      { error: 'Failed to fetch products' },
+      { status: 500 }
+    );
+  }
 }
