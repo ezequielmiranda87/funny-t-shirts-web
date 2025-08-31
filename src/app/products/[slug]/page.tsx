@@ -5,6 +5,7 @@ import { Product } from '@/app/api/products/route';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
+import { mockProducts, generateSlug } from '@/lib/products-data';
 
 interface ProductPageProps {
   params: Promise<{
@@ -12,20 +13,18 @@ interface ProductPageProps {
   }>;
 }
 
-// Generate slug from product name (same logic that will be used in backend)
-function generateSlug(name: string): string {
-  return name
-    .toLowerCase()
-    .replace(/[^\w\s-]/g, '')
-    .replace(/\s+/g, '-')
-    .replace(/-+/g, '-')
-    .trim();
-}
+// Use shared slug generation function from products-data
 
-// Fetch product by slug from API with ISR-ready caching
+// Fetch product by slug with fallback to shared data
 async function getProductBySlug(slug: string): Promise<Product | null> {
   try {
-    // Use absolute URL for build-time and server-side calls, relative for client-side
+    // For Vercel builds, use shared data directly to avoid API call issues
+    if (process.env.VERCEL_ENV) {
+      const product = mockProducts.find(p => generateSlug(p.name) === slug);
+      return product || null;
+    }
+    
+    // For development, try API first
     const baseUrl = process.env.VERCEL_URL 
       ? `https://${process.env.VERCEL_URL}`
       : process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
@@ -35,7 +34,9 @@ async function getProductBySlug(slug: string): Promise<Product | null> {
     });
     
     if (!response.ok) {
-      return null;
+      // Fallback to shared data if API fails
+      const product = mockProducts.find(p => generateSlug(p.name) === slug);
+      return product || null;
     }
     
     const data = await response.json();
@@ -46,7 +47,9 @@ async function getProductBySlug(slug: string): Promise<Product | null> {
     return product || null;
   } catch (error) {
     console.error('Error fetching product:', error);
-    return null;
+    // Fallback to shared data if everything fails
+    const product = mockProducts.find(p => generateSlug(p.name) === slug);
+    return product || null;
   }
 }
 
@@ -174,24 +177,9 @@ export default async function ProductPage({ params }: ProductPageProps) {
 
 // Generate static params for all products at build time
 export async function generateStaticParams() {
-  // Generate static routes for all products so they work on Vercel
-  const mockSlugs = [
-    'im-not-arguing-im-just-explaining-why-im-right',
-    'coffee-because-murder-is-wrong',
-    'im-not-lazy-im-on-energy-saving-mode', 
-    'error-404-motivation-not-found',
-    'im-not-short-im-fun-sized',
-    'sarcasm-just-one-of-my-many-talents',
-    'im-not-weird-im-limited-edition',
-    'loading-please-wait-99-complete',
-    'i-survived-another-meeting-that-could-have-been-an-email',
-    'ctrl-alt-delete-monday',
-    'running-late-is-my-cardio',
-    'im-not-clumsy-the-floor-just-hates-me'
-  ];
-  
-  return mockSlugs.map((slug) => ({
-    slug,
+  // Use shared product data to avoid API calls during build
+  return mockProducts.map((product) => ({
+    slug: generateSlug(product.name),
   }));
 }
 
