@@ -20,10 +20,10 @@ export interface Review {
   date: string;
 }
 
-// Simulate slow loading with a delay
+// Simulate API delay for development (reduced for better DX)
 async function simulateSlowAPI() {
   return new Promise(resolve => {
-    setTimeout(resolve, 2000); // 2 second delay to simulate slow API
+    setTimeout(resolve, 300); // 300ms delay for realistic but not painful development
   });
 }
 
@@ -351,6 +351,6 @@ export async function GET() {
   return NextResponse.json({
     products,
     total: products.length,
-    message: 'All products loaded at once - this is inefficient!'
+    message: 'Mock API - ready for backend integration'
   });
 }
