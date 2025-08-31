@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import Image from 'next/image';
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -23,12 +24,13 @@ export default function ProductCard({ product }: ProductCardProps) {
     <Card className="w-full h-full flex flex-col overflow-hidden py-0">
       <CardHeader className="p-0">
         <div className="relative aspect-[4/3] overflow-hidden">
-          {/* Intentionally using regular img tag instead of Next.js Image for slower loading */}
-          <img
+          <Image
             src={product.image}
             alt={product.name}
-            className="w-full h-full object-cover"
-            loading="eager" // Force immediate loading instead of lazy loading
+            fill
+            className="object-cover"
+            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+            priority={false}
           />
         </div>
       </CardHeader>
