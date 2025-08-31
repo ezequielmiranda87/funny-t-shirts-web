@@ -4,6 +4,7 @@ import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card'
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
+import { generateCategoryMetadata } from '@/lib/seo';
 
 interface CategoryPageProps {
   params: Promise<{
@@ -206,13 +207,18 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
   );
 }
 
-// Generate metadata for SEO (will be enhanced in Phase 4)
+// Generate enhanced metadata for category pages
 export async function generateMetadata({ params }: CategoryPageProps) {
   const { category } = await params;
+  const data = await getProductsByCategory(category);
   const displayCategory = category.charAt(0).toUpperCase() + category.slice(1);
   
-  return {
-    title: `${displayCategory} T-Shirts - Funny T-Shirts Shop`,
-    description: `Browse our collection of funny ${displayCategory.toLowerCase()} t-shirts. High quality, humorous designs perfect for any occasion.`,
-  };
+  if (data.products.length === 0) {
+    return {
+      title: `${displayCategory} T-Shirts - Funny T-Shirts Shop`,
+      description: 'Category not found or no products available in this category.',
+    };
+  }
+  
+  return generateCategoryMetadata(displayCategory, data.products.length, data.products);
 }

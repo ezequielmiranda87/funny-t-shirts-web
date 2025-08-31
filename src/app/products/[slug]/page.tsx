@@ -4,6 +4,8 @@ import { Product } from '@/app/api/products/route';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
+import { generateProductMetadata, generateProductStructuredData } from '@/lib/seo';
+import StructuredData from '@/components/StructuredData';
 
 interface ProductPageProps {
   params: Promise<{
@@ -58,6 +60,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
 
   return (
     <div className="min-h-screen bg-background">
+      <StructuredData data={generateProductStructuredData(product)} />
       {/* Header */}
       <header className="border-b">
         <div className="container mx-auto px-4 py-6">
@@ -164,19 +167,17 @@ export default async function ProductPage({ params }: ProductPageProps) {
   );
 }
 
-// Generate metadata for SEO (will be enhanced in Phase 4)
+// Generate enhanced metadata for SEO
 export async function generateMetadata({ params }: ProductPageProps) {
   const { slug } = await params;
   const product = await getProductBySlug(slug);
   
   if (!product) {
     return {
-      title: 'Product Not Found',
+      title: 'Product Not Found - Funny T-Shirts Shop',
+      description: 'The requested product could not be found.',
     };
   }
 
-  return {
-    title: `${product.name} - Funny T-Shirts Shop`,
-    description: product.description,
-  };
+  return generateProductMetadata(product);
 }
