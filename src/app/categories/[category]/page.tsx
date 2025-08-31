@@ -17,9 +17,20 @@ interface CategoryPageProps {
 }
 
 
-// Get products by category using database service
+// Get products by category with development optimization
 async function getProductsByCategoryFromDB(category: string): Promise<{ products: Product[], totalCount: number }> {
   try {
+    // For development, use static data for performance
+    if (process.env.NODE_ENV === 'development') {
+      const { getInitialProductsForBuild } = await import('@/lib/database-static-data');
+      const allProducts = getInitialProductsForBuild();
+      const filteredProducts = allProducts.filter((p: Product) => 
+        p.category.toLowerCase() === category.toLowerCase()
+      );
+      return { products: filteredProducts, totalCount: filteredProducts.length };
+    }
+    
+    // For production, use database service
     return await getProductsByCategory(category);
   } catch (error) {
     console.error('Error fetching products by category:', error);
@@ -27,9 +38,17 @@ async function getProductsByCategoryFromDB(category: string): Promise<{ products
   }
 }
 
-// Get all available categories using database service
+// Get all available categories with development optimization
 async function getAvailableCategories(): Promise<string[]> {
   try {
+    // For development, use static data for performance
+    if (process.env.NODE_ENV === 'development') {
+      const { getInitialProductsForBuild } = await import('@/lib/database-static-data');
+      const products = getInitialProductsForBuild();
+      return [...new Set(products.map((p: Product) => p.category))];
+    }
+    
+    // For production, use database service
     return await getCategories();
   } catch (error) {
     console.error('Error fetching categories:', error);

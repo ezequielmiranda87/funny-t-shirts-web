@@ -15,41 +15,32 @@ interface ProductPageProps {
 
 // Use shared slug generation function from products-data
 
-// Fetch product by slug with build-time optimization
+// Fetch product by slug with optimized fallback strategy
 async function getProductBySlugWithFallback(slug: string): Promise<Product | null> {
   try {
-    // During build time, use static data directly to avoid database initialization
-    if (process.env.NODE_ENV === 'production' || process.env.NEXT_PHASE === 'phase-production-build') {
+    // For development, always use static data first for performance
+    if (process.env.NODE_ENV === 'development') {
       const { getInitialProductsForBuild } = await import('@/lib/database-static-data');
       const products = getInitialProductsForBuild();
       return products.find(p => generateSlug(p.name) === slug) || null;
     }
     
-    // For Vercel runtime, use database service
-    if (process.env.VERCEL_ENV) {
+    // During build time, use static data directly
+    if (process.env.NEXT_PHASE === 'phase-production-build') {
+      const { getInitialProductsForBuild } = await import('@/lib/database-static-data');
+      const products = getInitialProductsForBuild();
+      return products.find(p => generateSlug(p.name) === slug) || null;
+    }
+    
+    // For production/Vercel runtime, use database service
+    if (process.env.VERCEL_ENV || process.env.NODE_ENV === 'production') {
       return await getProductBySlug(slug);
     }
     
-    // For development, try API first then fallback to database
-    const baseUrl = process.env.VERCEL_URL 
-      ? `https://${process.env.VERCEL_URL}`
-      : process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
-      
-    const response = await fetch(`${baseUrl}/api/products`, {
-      next: { revalidate: 3600 } // Cache for 1 hour, revalidate on-demand
-    });
-    
-    if (!response.ok) {
-      // Fallback to database service if API fails
-      return await getProductBySlug(slug);
-    }
-    
-    const data = await response.json();
-    const product = data.products.find((p: Product) => 
-      generateSlug(p.name) === slug
-    );
-    
-    return product || null;
+    // Fallback to static data
+    const { getInitialProductsForBuild } = await import('@/lib/database-static-data');
+    const products = getInitialProductsForBuild();
+    return products.find(p => generateSlug(p.name) === slug) || null;
   } catch (error) {
     console.error('Error fetching product:', error);
     // Final fallback to static data
