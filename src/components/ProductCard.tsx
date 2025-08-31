@@ -1,17 +1,24 @@
-'use client';
-
+import Link from 'next/link';
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Product } from '@/app/api/products/route';
-import Image from 'next/image';
 
 interface ProductCardProps {
   product: Product;
-  onViewDetails: (product: Product) => void;
 }
 
-export default function ProductCard({ product, onViewDetails }: ProductCardProps) {
+// Generate slug from product name (consistent with backend logic)
+function generateSlug(name: string): string {
+  return name
+    .toLowerCase()
+    .replace(/[^\w\s-]/g, '')
+    .replace(/\s+/g, '-')
+    .replace(/-+/g, '-')
+    .trim();
+}
+
+export default function ProductCard({ product }: ProductCardProps) {
   return (
     <Card className="w-full h-full flex flex-col overflow-hidden py-0">
       <CardHeader className="p-0">
@@ -54,13 +61,11 @@ export default function ProductCard({ product, onViewDetails }: ProductCardProps
       </CardContent>
       
       <CardFooter className="p-4 pt-0">
-        <Button 
-          onClick={() => onViewDetails(product)} 
-          className="w-full"
-          variant="default"
-        >
-          View Details
-        </Button>
+        <Link href={`/products/${generateSlug(product.name)}`} className="w-full">
+          <Button className="w-full" variant="default">
+            View Details
+          </Button>
+        </Link>
       </CardFooter>
     </Card>
   );
