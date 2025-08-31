@@ -21,19 +21,10 @@ export interface Review {
   date: string;
 }
 
-// Simulate API delay for development (reduced for better DX)
-async function simulateSlowAPI() {
-  return new Promise(resolve => {
-    setTimeout(resolve, 300); // 300ms delay for realistic but not painful development
-  });
-}
 
 // Product data is now imported from shared module
 
 export async function GET() {
-  // Simulate slow API response
-  await simulateSlowAPI();
-  
   // Return ALL products with ALL their details at once
   return NextResponse.json({
     products: mockProducts,
