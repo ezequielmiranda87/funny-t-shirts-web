@@ -5,6 +5,7 @@ import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card'
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
+import { mockProducts, generateSlug } from '@/lib/products-data';
 
 interface CategoryPageProps {
   params: Promise<{
@@ -15,75 +16,28 @@ interface CategoryPageProps {
   }>;
 }
 
-// Generate slug from product name (same logic that will be used in backend)
-function generateSlug(name: string): string {
-  return name
-    .toLowerCase()
-    .replace(/[^\w\s-]/g, '')
-    .replace(/\s+/g, '-')
-    .replace(/-+/g, '-')
-    .trim();
+
+// Get products by category using shared data (more efficient)
+function getProductsByCategory(category: string): { products: Product[], totalCount: number } {
+  const filteredProducts = mockProducts.filter((p: Product) => 
+    p.category.toLowerCase() === category.toLowerCase()
+  );
+  
+  return { 
+    products: filteredProducts,
+    totalCount: filteredProducts.length
+  };
 }
 
-// Fetch products by category
-async function getProductsByCategory(category: string): Promise<{ products: Product[], totalCount: number }> {
-  try {
-    // Use absolute URL for build-time and server-side calls
-    const baseUrl = process.env.VERCEL_URL 
-      ? `https://${process.env.VERCEL_URL}`
-      : process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
-      
-    const response = await fetch(`${baseUrl}/api/products`, {
-      cache: 'no-store' // For now, until we implement proper caching
-    });
-    
-    if (!response.ok) {
-      return { products: [], totalCount: 0 };
-    }
-    
-    const data = await response.json();
-    const filteredProducts = data.products.filter((p: Product) => 
-      p.category.toLowerCase() === category.toLowerCase()
-    );
-    
-    return { 
-      products: filteredProducts,
-      totalCount: filteredProducts.length
-    };
-  } catch (error) {
-    console.error('Error fetching products:', error);
-    return { products: [], totalCount: 0 };
-  }
-}
-
-// Get all available categories for validation
-async function getAvailableCategories(): Promise<string[]> {
-  try {
-    // Use absolute URL for build-time and server-side calls
-    const baseUrl = process.env.VERCEL_URL 
-      ? `https://${process.env.VERCEL_URL}`
-      : process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
-      
-    const response = await fetch(`${baseUrl}/api/products`, {
-      cache: 'no-store'
-    });
-    
-    if (!response.ok) {
-      return [];
-    }
-    
-    const data = await response.json();
-    const categories = [...new Set(data.products.map((p: Product) => p.category))] as string[];
-    return categories;
-  } catch (error) {
-    console.error('Error fetching categories:', error);
-    return [];
-  }
+// Get all available categories using shared data (more efficient)
+function getAvailableCategories(): string[] {
+  const categories = [...new Set(mockProducts.map((p: Product) => p.category))] as string[];
+  return categories;
 }
 
 export default async function CategoryPage({ params }: CategoryPageProps) {
   const { category } = await params;
-  const availableCategories = await getAvailableCategories();
+  const availableCategories = getAvailableCategories();
   
   // Check if category exists
   const categoryExists = availableCategories.some(
@@ -94,7 +48,7 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
     notFound();
   }
   
-  const { products, totalCount } = await getProductsByCategory(category);
+  const { products, totalCount } = getProductsByCategory(category);
   
   // Capitalize category name for display
   const displayCategory = category.charAt(0).toUpperCase() + category.slice(1);
