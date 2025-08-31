@@ -6,6 +6,7 @@ import PaginationControls from '@/components/PaginationControls';
 import ProductFilters from '@/components/ProductFilters';
 import { ProductGridSkeleton } from '@/components/ProductCardSkeleton';
 import { ProductSummary, CategoryInfo, PaginationMeta, CatalogResponse } from '@/types/api';
+import Header from '@/components/Header';
 
 export default function Home() {
   const [products, setProducts] = useState<ProductSummary[]>([]);
@@ -99,21 +100,12 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="border-b">
-        <div className="container mx-auto px-4 py-6">
-          <h1 className="text-3xl font-bold text-center">
-            😂 Funny T-Shirts Shop
-          </h1>
-          <p className="text-center text-muted-foreground mt-2">
-            {pagination ? (
-              <>Discover {pagination.total} hilarious t-shirt designs</>
-            ) : (
-              'Loading amazing t-shirt designs...'
-            )}
-          </p>
-        </div>
-      </header>
+      {/* Professional Header */}
+      <Header
+        title="Funny T-Shirts Shop"
+        subtitle={pagination ? `Discover ${pagination.total} hilarious t-shirt designs` : 'Loading amazing t-shirt designs...'}
+        cartItemCount={0}
+      />
 
       {/* Product Filters and Grid */}
       <main className="container mx-auto px-4 py-8">

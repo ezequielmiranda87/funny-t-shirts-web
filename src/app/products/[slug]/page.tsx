@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { getProductBySlug, getProductsForStaticGeneration, generateSlug } from '@/lib/db-service';
+import Header, { Breadcrumb } from '@/components/Header';
 
 interface ProductPageProps {
   params: Promise<{
@@ -38,27 +39,25 @@ export default async function ProductPage({ params }: ProductPageProps) {
     ? product.reviews.reduce((acc, review) => acc + review.rating, 0) / product.reviews.length
     : 0;
 
+  // Create breadcrumbs for navigation
+  const breadcrumbs: Breadcrumb[] = [
+    { label: 'Home', href: '/' },
+    { label: 'Products', href: '/', active: false },
+    { label: product.name, href: '', active: true }
+  ];
+
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="border-b">
-        <div className="container mx-auto px-4 py-6">
-          <h1 className="text-2xl font-bold">
-            <Link href="/" className="text-blue-600 hover:underline">
-              😂 Funny T-Shirts Shop
-            </Link>
-          </h1>
-          <nav className="mt-2">
-            <Link href="/" className="text-sm text-muted-foreground hover:underline">
-              Home
-            </Link>
-            <span className="mx-2 text-muted-foreground">/</span>
-            <span className="text-sm">Products</span>
-            <span className="mx-2 text-muted-foreground">/</span>
-            <span className="text-sm text-foreground">{product.name}</span>
-          </nav>
-        </div>
-      </header>
+      {/* Professional Header with Back Button */}
+      <Header
+        showBackButton={true}
+        backButtonText="Back to Shop"
+        backButtonHref="/"
+        breadcrumbs={breadcrumbs}
+        title={product.name}
+        subtitle={`${product.category} • $${product.price} • ${product.stock} in stock`}
+        cartItemCount={0}
+      />
 
       {/* Product Content */}
       <main className="container mx-auto px-4 py-8">
