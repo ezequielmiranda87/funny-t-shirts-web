@@ -15,43 +15,14 @@ interface ProductPageProps {
 
 // Use shared slug generation function from products-data
 
-// Fetch product by slug with optimized fallback strategy
+// Fetch product by slug using database service consistently
 async function getProductBySlugWithFallback(slug: string): Promise<Product | null> {
   try {
-    // For development, always use static data first for performance
-    if (process.env.NODE_ENV === 'development') {
-      const { getInitialProductsForBuild } = await import('@/lib/database-static-data');
-      const products = getInitialProductsForBuild();
-      return products.find(p => generateSlug(p.name) === slug) || null;
-    }
-    
-    // During build time, use static data directly
-    if (process.env.NEXT_PHASE === 'phase-production-build') {
-      const { getInitialProductsForBuild } = await import('@/lib/database-static-data');
-      const products = getInitialProductsForBuild();
-      return products.find(p => generateSlug(p.name) === slug) || null;
-    }
-    
-    // For production/Vercel runtime, use database service
-    if (process.env.VERCEL_ENV || process.env.NODE_ENV === 'production') {
-      return await getProductBySlug(slug);
-    }
-    
-    // Fallback to static data
-    const { getInitialProductsForBuild } = await import('@/lib/database-static-data');
-    const products = getInitialProductsForBuild();
-    return products.find(p => generateSlug(p.name) === slug) || null;
+    // Use database service directly - it handles initialization
+    return await getProductBySlug(slug);
   } catch (error) {
     console.error('Error fetching product:', error);
-    // Final fallback to static data
-    try {
-      const { getInitialProductsForBuild } = await import('@/lib/database-static-data');
-      const products = getInitialProductsForBuild();
-      return products.find(p => generateSlug(p.name) === slug) || null;
-    } catch (staticError) {
-      console.error('Static data fallback also failed:', staticError);
-      return null;
-    }
+    return null;
   }
 }
 

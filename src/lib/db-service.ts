@@ -54,12 +54,11 @@ export async function getCategories(): Promise<string[]> {
 
 /**
  * Get products for static generation (used by generateStaticParams)
- * Always uses static data for build performance
+ * Uses database service for consistent data source
  */
 export async function getProductsForStaticGeneration(): Promise<Product[]> {
-  // Always use static data import to avoid database initialization during build
-  const { getInitialProductsForBuild } = await import('./database-static-data');
-  return getInitialProductsForBuild();
+  // Use database service directly - it will initialize if needed
+  return await getAllProducts();
 }
 
 // Re-export generateSlug for consistency
