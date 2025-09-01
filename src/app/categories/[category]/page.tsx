@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
 import { getProductsByCategory, getCategories, generateSlug } from '@/lib/db-service';
+import Header from '@/components/Header';
 
 interface CategoryPageProps {
   params: Promise<{
@@ -57,25 +58,17 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="border-b" role="banner">
-        <div className="container mx-auto px-4 py-6">
-          <div className="text-2xl font-bold">
-            <Link href="/" className="text-blue-600 hover:underline">
-              😂 Funny T-Shirts Shop
-            </Link>
-          </div>
-          <nav className="mt-2" aria-label="Breadcrumb">
-            <Link href="/" className="text-sm text-muted-foreground hover:underline">
-              Home
-            </Link>
-            <span className="mx-2 text-muted-foreground">/</span>
-            <span className="text-sm">Categories</span>
-            <span className="mx-2 text-muted-foreground">/</span>
-            <span className="text-sm text-foreground">{displayCategory}</span>
-          </nav>
-        </div>
-      </header>
+      {/* Professional Header */}
+      <Header
+        title="Funny T-Shirts Shop"
+        subtitle={`Browse ${totalCount} hilarious ${displayCategory.toLowerCase()} t-shirt designs`}
+        breadcrumbs={[
+          { label: 'Home', href: '/' },
+          { label: 'Categories', href: '/categories' },
+          { label: displayCategory, href: '', active: true }
+        ]}
+        cartItemCount={0}
+      />
 
       {/* Category Content */}
       <main id="main-content" className="container mx-auto px-4 py-8" role="main">
@@ -110,7 +103,7 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
               {displayCategory} category products
             </h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-              {products.map((product) => (
+              {products.map((product, index) => (
                 <article key={product.id}>
                   <Card className="w-full h-full flex flex-col overflow-hidden">
                     <CardHeader className="p-0">
@@ -121,7 +114,7 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
                           fill
                           className="object-cover"
                           sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
-                          priority={false}
+                          priority={index < 4}
                         />
                       </div>
                     </CardHeader>

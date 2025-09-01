@@ -5,7 +5,7 @@ import ProductCard from '@/components/ProductCard';
 import PaginationControls from '@/components/PaginationControls';
 import ProductFilters from '@/components/ProductFilters';
 import { ProductGridSkeleton } from '@/components/ProductCardSkeleton';
-import { ProductSummary, CategoryInfo, PaginationMeta, CatalogResponse } from '@/types/api';
+import { ProductSummary, CategoryInfo, PaginationMeta } from '@/types/api';
 import Header from '@/components/Header';
 
 export default function Home() {
@@ -13,7 +13,6 @@ export default function Home() {
   const [categories, setCategories] = useState<CategoryInfo[]>([]);
   const [pagination, setPagination] = useState<PaginationMeta | null>(null);
   const [loading, setLoading] = useState(true);
-  const [currentPage, setCurrentPage] = useState(1);
   const [currentCategory, setCurrentCategory] = useState<string | undefined>();
   const [currentSort, setCurrentSort] = useState('newest');
   const [error, setError] = useState<string | null>(null);
@@ -36,18 +35,18 @@ export default function Home() {
         params.append('category', category);
       }
       
-      const response = await fetch(`/api/products/catalog?${params.toString()}`);
+      const response = await fetch(`/api/products?${params.toString()}`);
       const result = await response.json();
       
       if (!result.success) {
         throw new Error(result.message || 'Failed to fetch products');
       }
       
-      const data: CatalogResponse = result.data;
-      setProducts(data.products);
-      setPagination(data.pagination);
-      setCategories(data.categories);
-      setStatusMessage(`Loaded ${data.products.length} products`);
+      // Updated to match new API response format
+      setProducts(result.data || []);
+      setPagination(result.pagination);
+      setCategories(result.categories || []);
+      setStatusMessage(`Loaded ${(result.data || []).length} products`);
       
     } catch (error) {
       console.error('Failed to fetch catalog:', error);
@@ -65,7 +64,6 @@ export default function Home() {
 
   // Handle page change
   const handlePageChange = (page: number) => {
-    setCurrentPage(page);
     fetchCatalog(page, currentCategory, currentSort);
     // Scroll to top on page change
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -75,7 +73,6 @@ export default function Home() {
   // Handle category filter
   const handleCategoryChange = (category: string | undefined) => {
     setCurrentCategory(category);
-    setCurrentPage(1);
     fetchCatalog(1, category, currentSort);
     setStatusMessage(category ? `Filtered to ${category} category` : 'Showing all categories');
   };
@@ -83,7 +80,6 @@ export default function Home() {
   // Handle sort change
   const handleSortChange = (sort: string) => {
     setCurrentSort(sort);
-    setCurrentPage(1);
     fetchCatalog(1, currentCategory, sort);
     const sortLabels: { [key: string]: string } = {
       'newest': 'newest first',
@@ -136,7 +132,7 @@ export default function Home() {
           {statusMessage}
         </div>
         {/* Filters */}
-        {!loading && categories.length > 0 && (
+        {!loading && categories && categories.length > 0 && (
           <ProductFilters
             categories={categories}
             currentCategory={currentCategory}
@@ -157,10 +153,11 @@ export default function Home() {
                 Product listings
               </h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-                {products.map((product) => (
+                {products.map((product, index) => (
                   <ProductCard
                     key={product.id}
                     product={product}
+                    priority={index < 4}
                   />
                 ))}
               </div>

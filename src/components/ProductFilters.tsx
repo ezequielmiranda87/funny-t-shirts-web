@@ -18,10 +18,14 @@ export default function ProductFilters({
 }: ProductFiltersProps) {
   const sortOptions = [
     { value: 'newest', label: 'Newest First' },
+    { value: 'oldest', label: 'Oldest First' },
     { value: 'price-asc', label: 'Price: Low to High' },
     { value: 'price-desc', label: 'Price: High to Low' },
-    { value: 'rating', label: 'Highest Rated' },
-    { value: 'name', label: 'Name A-Z' }
+    { value: 'rating-desc', label: 'Highest Rated' },
+    { value: 'rating-asc', label: 'Lowest Rated' },
+    { value: 'name-asc', label: 'Name: A to Z' },
+    { value: 'name-desc', label: 'Name: Z to A' },
+    { value: 'popularity', label: 'Most Popular' }
   ];
 
   return (
@@ -74,16 +78,16 @@ export default function ProductFilters({
           </div>
           
           {/* Individual Categories */}
-          {categories.map((category) => (
+          {categories && categories.map((category) => (
             <button
               key={category.name}
-              onClick={() => onCategoryChange(category.name.toLowerCase())}
+              onClick={() => onCategoryChange(category.name)}
               className={`px-3 py-1 rounded-full text-sm border transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 ${
-                currentCategory === category.name.toLowerCase()
+                currentCategory === category.name
                   ? 'bg-primary text-primary-foreground border-primary'
                   : 'bg-background text-foreground border-border hover:bg-muted'
               }`}
-              aria-pressed={currentCategory === category.name.toLowerCase()}
+              aria-pressed={currentCategory === category.name}
               aria-label={`Filter by ${category.name} category, ${category.count} products available`}
             >
               {category.name}

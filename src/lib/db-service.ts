@@ -111,7 +111,7 @@ function productToDetail(product: Product): ProductDetail {
 }
 
 /**
- * Get paginated product catalog for homepage
+ * Get paginated product catalog with enhanced filtering and search
  */
 export async function getProductsCatalog(options: CatalogOptions = {}): Promise<{
   products: ProductSummary[],
@@ -121,16 +121,63 @@ export async function getProductsCatalog(options: CatalogOptions = {}): Promise<
   const { 
     page = 1, 
     limit = 12, 
+    q,           // search query
     category, 
+    minPrice,
+    maxPrice,
+    minRating,
+    inStock,
     sort = 'newest' 
   } = options;
 
   const allProducts = await getAllProducts();
   
-  // Filter by category if specified
-  let filteredProducts = category 
-    ? allProducts.filter(p => p.category.toLowerCase() === category.toLowerCase())
-    : allProducts;
+  // Apply all filters
+  let filteredProducts = allProducts.filter(product => {
+    // Search filter (case-insensitive search in name and description)
+    if (q) {
+      const searchTerm = q.toLowerCase();
+      const productName = product.name.toLowerCase();
+      const productDesc = product.description.toLowerCase();
+      const productCategory = product.category.toLowerCase();
+      
+      if (!productName.includes(searchTerm) && 
+          !productDesc.includes(searchTerm) && 
+          !productCategory.includes(searchTerm)) {
+        return false;
+      }
+    }
+    
+    // Category filter
+    if (category && product.category.toLowerCase() !== category.toLowerCase()) {
+      return false;
+    }
+    
+    // Price range filter
+    if (minPrice !== undefined && product.price < minPrice) {
+      return false;
+    }
+    if (maxPrice !== undefined && product.price > maxPrice) {
+      return false;
+    }
+    
+    // Rating filter
+    if (minRating !== undefined) {
+      const avgRating = product.reviews.length > 0 
+        ? product.reviews.reduce((acc, review) => acc + review.rating, 0) / product.reviews.length 
+        : 0;
+      if (avgRating < minRating) {
+        return false;
+      }
+    }
+    
+    // Stock filter
+    if (inStock === true && product.stock <= 0) {
+      return false;
+    }
+    
+    return true;
+  });
   
   // Sort products
   filteredProducts = sortProducts(filteredProducts, sort);
@@ -221,7 +268,7 @@ export async function getCategoriesWithCounts(): Promise<CategoryInfo[]> {
 }
 
 /**
- * Sort products array
+ * Sort products array with enhanced sorting options
  */
 function sortProducts(products: Product[], sort: string): Product[] {
   const sortedProducts = [...products];
@@ -231,17 +278,31 @@ function sortProducts(products: Product[], sort: string): Product[] {
       return sortedProducts.sort((a, b) => a.price - b.price);
     case 'price-desc':
       return sortedProducts.sort((a, b) => b.price - a.price);
-    case 'name':
+    case 'name-asc':
       return sortedProducts.sort((a, b) => a.name.localeCompare(b.name));
-    case 'rating':
+    case 'name-desc':
+      return sortedProducts.sort((a, b) => b.name.localeCompare(a.name));
+    case 'rating-desc':
       return sortedProducts.sort((a, b) => {
         const avgA = a.reviews.length > 0 ? a.reviews.reduce((acc, r) => acc + r.rating, 0) / a.reviews.length : 0;
         const avgB = b.reviews.length > 0 ? b.reviews.reduce((acc, r) => acc + r.rating, 0) / b.reviews.length : 0;
         return avgB - avgA;
       });
+    case 'rating-asc':
+      return sortedProducts.sort((a, b) => {
+        const avgA = a.reviews.length > 0 ? a.reviews.reduce((acc, r) => acc + r.rating, 0) / a.reviews.length : 0;
+        const avgB = b.reviews.length > 0 ? b.reviews.reduce((acc, r) => acc + r.rating, 0) / b.reviews.length : 0;
+        return avgA - avgB;
+      });
+    case 'popularity':
+      // Sort by number of reviews (more reviews = more popular)
+      return sortedProducts.sort((a, b) => b.reviews.length - a.reviews.length);
+    case 'oldest':
+      // For mock data, sort by ID ascending (lowest ID = oldest)
+      return sortedProducts.sort((a, b) => parseInt(a.id) - parseInt(b.id));
     case 'newest':
     default:
-      // For mock data, sort by ID as a proxy for newest (highest ID = newest)
+      // For mock data, sort by ID descending (highest ID = newest)
       return sortedProducts.sort((a, b) => parseInt(b.id) - parseInt(a.id));
   }
 }

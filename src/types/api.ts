@@ -71,10 +71,20 @@ export interface CategoriesResponse {
   categories: CategoryInfo[];
 }
 
-// Catalog query options
+// Enhanced catalog query options
 export interface CatalogOptions {
+  // Pagination
   page?: number;
   limit?: number;
-  category?: string;
-  sort?: 'price-asc' | 'price-desc' | 'name' | 'rating' | 'newest';
+  
+  // Search & Filtering
+  q?: string;                    // Search query
+  category?: string;             // Category filter
+  minPrice?: number;             // Minimum price filter
+  maxPrice?: number;             // Maximum price filter
+  minRating?: number;            // Minimum rating filter (0-5)
+  inStock?: boolean;             // Only show in-stock items
+  
+  // Sorting
+  sort?: 'newest' | 'oldest' | 'price-asc' | 'price-desc' | 'rating-desc' | 'rating-asc' | 'name-asc' | 'name-desc' | 'popularity';
 }

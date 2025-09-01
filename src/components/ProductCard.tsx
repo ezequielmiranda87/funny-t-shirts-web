@@ -7,6 +7,7 @@ import { ProductSummary } from '@/types/api';
 
 interface ProductCardProps {
   product: ProductSummary;
+  priority?: boolean;
 }
 
 // Generate slug from product name (consistent with backend logic)
@@ -19,7 +20,7 @@ function generateSlug(name: string): string {
     .trim();
 }
 
-export default function ProductCard({ product }: ProductCardProps) {
+export default function ProductCard({ product, priority = false }: ProductCardProps) {
   return (
     <article className="w-full h-full">
       <Link 
@@ -37,7 +38,7 @@ export default function ProductCard({ product }: ProductCardProps) {
               fill
               className="object-cover group-hover:scale-105 transition-transform duration-200"
               sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
-              priority={false}
+              priority={priority}
             />
           </div>
         </CardHeader>
