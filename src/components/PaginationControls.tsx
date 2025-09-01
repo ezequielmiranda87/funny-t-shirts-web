@@ -48,23 +48,28 @@ export default function PaginationControls({
   if (totalPages <= 1) return null;
 
   return (
-    <div className="flex items-center justify-center space-x-2 mt-8">
+    <nav className="flex items-center justify-center space-x-2 mt-8" role="navigation" aria-label="Pagination">
       {/* Previous Button */}
       <Button
         variant="outline"
         size="sm"
         onClick={() => onPageChange(page - 1)}
         disabled={!hasPrev || isLoading}
+        aria-label="Go to previous page"
+        aria-disabled={!hasPrev || isLoading}
       >
         Previous
       </Button>
 
       {/* Page Numbers */}
-      <div className="flex space-x-1">
+      <div className="flex space-x-1" role="group" aria-label="Page numbers">
         {getVisiblePages().map((pageNum, index) => (
           <div key={index}>
             {pageNum === '...' ? (
-              <span className="px-3 py-2 text-sm text-muted-foreground">
+              <span 
+                className="px-3 py-2 text-sm text-muted-foreground"
+                aria-hidden="true"
+              >
                 ...
               </span>
             ) : (
@@ -73,6 +78,8 @@ export default function PaginationControls({
                 size="sm"
                 onClick={() => onPageChange(pageNum as number)}
                 disabled={isLoading}
+                aria-label={`Go to page ${pageNum}`}
+                aria-current={page === pageNum ? "page" : undefined}
               >
                 {pageNum}
               </Button>
@@ -87,14 +94,16 @@ export default function PaginationControls({
         size="sm"
         onClick={() => onPageChange(page + 1)}
         disabled={!hasNext || isLoading}
+        aria-label="Go to next page"
+        aria-disabled={!hasNext || isLoading}
       >
         Next
       </Button>
 
       {/* Page Info */}
-      <div className="ml-4 text-sm text-muted-foreground">
+      <div className="ml-4 text-sm text-muted-foreground" aria-live="polite" aria-atomic="true">
         Page {page} of {totalPages}
       </div>
-    </div>
+    </nav>
   );
 }

@@ -58,14 +58,14 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="border-b">
+      <header className="border-b" role="banner">
         <div className="container mx-auto px-4 py-6">
-          <h1 className="text-2xl font-bold">
+          <div className="text-2xl font-bold">
             <Link href="/" className="text-blue-600 hover:underline">
               😂 Funny T-Shirts Shop
             </Link>
-          </h1>
-          <nav className="mt-2">
+          </div>
+          <nav className="mt-2" aria-label="Breadcrumb">
             <Link href="/" className="text-sm text-muted-foreground hover:underline">
               Home
             </Link>
@@ -78,7 +78,7 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
       </header>
 
       {/* Category Content */}
-      <main className="container mx-auto px-4 py-8">
+      <main id="main-content" className="container mx-auto px-4 py-8" role="main">
         <div className="mb-8">
           <h1 className="text-3xl font-bold mb-2">{displayCategory} T-Shirts</h1>
           <p className="text-muted-foreground mb-4">
@@ -105,59 +105,76 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
 
         {/* Products Grid */}
         {products.length > 0 ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-            {products.map((product) => (
-              <Card key={product.id} className="w-full h-full flex flex-col overflow-hidden">
-                <CardHeader className="p-0">
-                  <div className="relative aspect-[4/3] overflow-hidden">
-                    <Image
-                      src={product.image}
-                      alt={product.name}
-                      fill
-                      className="object-cover"
-                      sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
-                      priority={false}
-                    />
-                  </div>
-                </CardHeader>
+          <section aria-labelledby="category-products-heading">
+            <h2 id="category-products-heading" className="sr-only">
+              {displayCategory} category products
+            </h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+              {products.map((product) => (
+                <article key={product.id}>
+                  <Card className="w-full h-full flex flex-col overflow-hidden">
+                    <CardHeader className="p-0">
+                      <div className="relative aspect-[4/3] overflow-hidden">
+                        <Image
+                          src={product.image}
+                          alt={`${product.name} - ${product.category} funny t-shirt design`}
+                          fill
+                          className="object-cover"
+                          sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+                          priority={false}
+                        />
+                      </div>
+                    </CardHeader>
                 
-                <CardContent className="flex-grow p-4">
-                  <div className="space-y-2">
-                    <Badge variant="secondary" className="text-xs">
-                      {product.category}
-                    </Badge>
-                    <h3 className="font-semibold text-sm leading-tight line-clamp-2">
-                      {product.name}
-                    </h3>
-                    <p className="text-2xl font-bold text-primary">
-                      ${product.price}
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      Stock: {product.stock} left
-                    </p>
-                    <div className="flex items-center space-x-1 text-xs text-muted-foreground">
-                      <span>⭐</span>
-                      <span>
-                        {product.reviews.length > 0 
-                          ? (product.reviews.reduce((acc, review) => acc + review.rating, 0) / product.reviews.length).toFixed(1)
-                          : 'No reviews'
-                        }
-                      </span>
-                      <span>({product.reviews.length} reviews)</span>
-                    </div>
-                  </div>
-                </CardContent>
+                    <CardContent className="flex-grow p-4">
+                      <div className="space-y-2">
+                        <Badge variant="secondary" className="text-xs" aria-hidden="true">
+                          {product.category}
+                        </Badge>
+                        <h3 className="font-semibold text-sm leading-tight line-clamp-2">
+                          {product.name}
+                        </h3>
+                        <p className="text-2xl font-bold text-primary">
+                          <span className="sr-only">Price: </span>
+                          ${product.price}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          <span className="sr-only">Stock available: </span>
+                          Stock: {product.stock} left
+                        </p>
+                        <div className="flex items-center space-x-1 text-xs text-muted-foreground">
+                          <span aria-hidden="true">⭐</span>
+                          <span>
+                            <span className="sr-only">
+                              {product.reviews.length > 0 
+                                ? `Rating: ${(product.reviews.reduce((acc, review) => acc + review.rating, 0) / product.reviews.length).toFixed(1)} out of 5 stars`
+                                : 'No ratings yet'
+                              }
+                            </span>
+                            <span aria-hidden="true">
+                              {product.reviews.length > 0 
+                                ? (product.reviews.reduce((acc, review) => acc + review.rating, 0) / product.reviews.length).toFixed(1)
+                                : 'No reviews'
+                              }
+                            </span>
+                          </span>
+                          <span aria-hidden="true">({product.reviews.length} reviews)</span>
+                        </div>
+                      </div>
+                    </CardContent>
                 
-                <CardFooter className="p-4 pt-0">
-                  <Link href={`/products/${generateSlug(product.name)}`} className="w-full">
-                    <Button className="w-full" variant="default">
-                      View Details
-                    </Button>
-                  </Link>
-                </CardFooter>
-              </Card>
-            ))}
-          </div>
+                    <CardFooter className="p-4 pt-0">
+                      <Link href={`/products/${generateSlug(product.name)}`} className="w-full">
+                        <Button className="w-full" variant="default" aria-label={`View details for ${product.name}`}>
+                          View Details
+                        </Button>
+                      </Link>
+                    </CardFooter>
+                  </Card>
+                </article>
+              ))}
+            </div>
+          </section>
         ) : (
           <div className="text-center py-12">
             <p className="text-muted-foreground mb-4">

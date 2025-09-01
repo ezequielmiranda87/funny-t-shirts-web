@@ -1,7 +1,7 @@
 import { join } from 'path';
 import { Low } from 'lowdb';
 import { JSONFile } from 'lowdb/node';
-import { Product, Review } from '@/app/api/products/route';
+import { Product } from '@/app/api/products/route';
 
 // Database schema
 type DatabaseSchema = {

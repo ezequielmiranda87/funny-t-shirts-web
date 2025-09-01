@@ -1,5 +1,4 @@
 import { notFound } from 'next/navigation';
-import Link from 'next/link';
 import Image from 'next/image';
 import { Product } from '@/app/api/products/route';
 import { Badge } from '@/components/ui/badge';
@@ -60,14 +59,14 @@ export default async function ProductPage({ params }: ProductPageProps) {
       />
 
       {/* Product Content */}
-      <main className="container mx-auto px-4 py-8">
+      <main id="main-content" className="container mx-auto px-4 py-8" role="main">
         <div className="grid md:grid-cols-2 gap-8">
           {/* Product Image */}
           <div className="space-y-4">
             <div className="aspect-square relative overflow-hidden rounded-lg border">
               <Image
                 src={product.image}
-                alt={product.name}
+                alt={`${product.name} - ${product.category} funny t-shirt design featuring humorous artwork`}
                 fill
                 className="object-cover"
                 sizes="(max-width: 768px) 100vw, 50vw"
@@ -79,54 +78,76 @@ export default async function ProductPage({ params }: ProductPageProps) {
           {/* Product Details */}
           <div className="space-y-6">
             {/* Title and Category */}
-            <div>
-              <Badge variant="secondary" className="mb-3">
+            <header>
+              <Badge variant="secondary" className="mb-3" aria-hidden="true">
                 {product.category}
               </Badge>
               <h1 className="text-3xl font-bold mb-2">{product.name}</h1>
               <p className="text-4xl font-bold text-primary mb-4">
+                <span className="sr-only">Price: </span>
                 ${product.price}
               </p>
               <div className="flex items-center space-x-2 text-sm text-muted-foreground mb-4">
-                <span>⭐ {averageRating.toFixed(1)}</span>
-                <span>({product.reviews.length} reviews)</span>
-                <span>•</span>
-                <span>{product.stock} in stock</span>
+                <span aria-hidden="true">⭐ {averageRating.toFixed(1)}</span>
+                <span className="sr-only">
+                  Average rating: {averageRating.toFixed(1)} out of 5 stars
+                </span>
+                <span aria-hidden="true">({product.reviews.length} reviews)</span>
+                <span className="sr-only">
+                  {product.reviews.length} customer review{product.reviews.length !== 1 ? 's' : ''}
+                </span>
+                <span aria-hidden="true">•</span>
+                <span>
+                  <span className="sr-only">Stock available: </span>
+                  {product.stock} in stock
+                </span>
               </div>
-            </div>
+            </header>
             
             {/* Description */}
-            <div>
+            <section aria-labelledby="product-description">
+              <h2 id="product-description" className="sr-only">Product Description</h2>
               <p className="text-muted-foreground leading-relaxed">
                 {product.description}
               </p>
-            </div>
+            </section>
             
             {/* Add to Cart */}
-            <div className="space-y-4">
-              <Button className="w-full" size="lg">
-                Add to Cart - ${product.price}
-              </Button>
-              <Button variant="outline" className="w-full" size="lg">
-                Buy Now
-              </Button>
-            </div>
+            <section aria-labelledby="purchase-options">
+              <h2 id="purchase-options" className="sr-only">Purchase Options</h2>
+              <div className="space-y-4">
+                <Button className="w-full" size="lg" aria-describedby="add-to-cart-help">
+                  Add to Cart - ${product.price}
+                </Button>
+                <div id="add-to-cart-help" className="sr-only">
+                  Add this {product.name} t-shirt to your shopping cart for ${product.price}
+                </div>
+                <Button variant="outline" className="w-full" size="lg" aria-describedby="buy-now-help">
+                  Buy Now
+                </Button>
+                <div id="buy-now-help" className="sr-only">
+                  Purchase this {product.name} t-shirt immediately for ${product.price}
+                </div>
+              </div>
+            </section>
             
             {/* Reviews */}
-            <div className="border-t pt-6">
-              <h3 className="font-semibold mb-4">Customer Reviews</h3>
-              <div className="space-y-4 max-h-64 overflow-y-auto">
+            <section className="border-t pt-6" aria-labelledby="reviews-heading">
+              <h2 id="reviews-heading" className="font-semibold mb-4">Customer Reviews</h2>
+              <div className="space-y-4 max-h-64 overflow-y-auto" role="region" aria-label="Customer reviews list">
                 {product.reviews.map((review) => (
-                  <Card key={review.id} className="p-4">
+                  <Card key={review.id} className="p-4" role="article" aria-labelledby={`review-${review.id}-author`}>
                     <div className="flex items-center justify-between mb-2">
-                      <p className="font-medium text-sm">{review.userName}</p>
+                      <p id={`review-${review.id}-author`} className="font-medium text-sm">{review.userName}</p>
                       <div className="flex items-center space-x-2">
-                        <span className="text-sm">
-                          {'⭐'.repeat(review.rating)}
+                        <span className="text-sm" aria-label={`${review.rating} out of 5 stars`}>
+                          <span aria-hidden="true">
+                            {'⭐'.repeat(review.rating)}
+                          </span>
                         </span>
-                        <span className="text-xs text-muted-foreground">
+                        <time className="text-xs text-muted-foreground" dateTime={review.date}>
                           {new Date(review.date).toLocaleDateString()}
-                        </span>
+                        </time>
                       </div>
                     </div>
                     <p className="text-sm text-muted-foreground">
@@ -136,10 +157,10 @@ export default async function ProductPage({ params }: ProductPageProps) {
                 ))}
                 
                 {product.reviews.length === 0 && (
-                  <p className="text-sm text-muted-foreground">No reviews yet.</p>
+                  <p className="text-sm text-muted-foreground">No reviews yet. Be the first to review this product!</p>
                 )}
               </div>
-            </div>
+            </section>
           </div>
         </div>
       </main>
